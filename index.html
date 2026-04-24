@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project DJA — Compliance-Aware AI Advising for CUNY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #141210;
+    --paper: #f4efe6;
+    --paper-deep: #ebe4d6;
+    --rule: #1a1814;
+    --alert: #c8341a;
+    --alert-soft: #e8d5c8;
+    --seal: #1f4d3f;
+    --seal-soft: #d4dfd4;
+    --gold: #9a7b3a;
+    --muted: #6b6558;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(200,52,26,0.03) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(31,77,63,0.04) 0%, transparent 50%);
+  }
+
+  /* grain overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    z-index: 1000;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.06 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ================= NAV ================= */
+  nav {
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+  }
+  .brand-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 8px;
+    background: var(--alert);
+    border-radius: 50%;
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .nav-links a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--alert); }
+
+  /* ================= MASTHEAD ================= */
+  .masthead {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .eyebrow span { padding: 0 8px; }
+
+  h1.headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(48px, 8vw, 112px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin-bottom: 48px;
+  }
+  h1.headline em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--alert);
+  }
+  h1.headline .accent {
+    font-weight: 800;
+  }
+
+  .dek-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .dek {
+    font-family: 'Newsreader', serif;
+    font-size: 22px;
+    line-height: 1.45;
+    font-weight: 300;
+    color: var(--ink);
+  }
+  .dek strong { font-weight: 500; }
+  .byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    line-height: 2;
+    border-left: 2px solid var(--alert);
+    padding-left: 16px;
+  }
+  .byline b { color: var(--ink); font-weight: 700; }
+
+  /* ================= STAKES BAR ================= */
+  .stakes {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 60px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .stakes::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(90deg, var(--alert) 0 20px, var(--paper) 20px 24px, var(--gold) 24px 44px, var(--paper) 44px 48px);
+  }
+  .stakes-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--alert-soft);
+    margin-bottom: 24px;
+  }
+  .stakes-copy {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(24px, 3vw, 40px);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    max-width: 900px;
+  }
+  .stakes-copy b {
+    font-weight: 600;
+    font-style: normal;
+    color: #f6c873;
+  }
+
+  /* ================= SECTION HEADERS ================= */
+  section { padding: 100px 0; border-bottom: 1px solid var(--rule); }
+  .section-head {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 40px;
+    margin-bottom: 64px;
+    align-items: baseline;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    border-top: 2px solid var(--ink);
+    padding-top: 12px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .section-title em { font-style: italic; color: var(--alert); }
+
+  /* ================= GUARDRAIL MATRIX ================= */
+  .matrix {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .card {
+    background: var(--paper);
+    padding: 36px 32px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .card:hover { background: var(--paper-deep); }
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 22px;
+    margin-bottom: 20px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .card.critical .card-icon { background: var(--alert); color: var(--paper); border-color: var(--alert); }
+  .card.fiscal .card-icon { background: var(--seal); color: var(--paper); border-color: var(--seal); }
+  .card.fiscal2 .card-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+  .card-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .card-rule {
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .card-risk {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--alert);
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule);
+  }
+
+  /* ================= HOW IT WORKS ================= */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+  .step {
+    padding: 32px 24px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    position: relative;
+  }
+  .step-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--alert);
+    margin-bottom: 20px;
+    letter-spacing: -0.04em;
+  }
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+  }
+  .step-body {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .step-tag {
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+  .step.deterministic { border-color: var(--seal); border-width: 2px; }
+  .step.deterministic .step-tag { color: var(--seal); font-weight: 700; }
+
+  /* ================= DEMO PANEL ================= */
+  .demo-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: stretch;
+  }
+  .demo-panel {
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+  }
+  .demo-panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .demo-panel-title span::before { content: "◆ "; color: var(--alert); }
+  .profile-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-size: 16px;
+  }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-row b { font-weight: 600; }
+  .profile-row .val { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .profile-row .val.flag { color: var(--alert); font-weight: 700; }
+
+  .rec-card {
+    background: var(--paper);
+    padding: 20px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--seal);
+  }
+  .rec-card.warn { border-left-color: var(--alert); }
+  .rec-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .rec-name {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .rec-reason {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .rec-checks {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .check {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 8px;
+    background: var(--seal-soft);
+    color: var(--seal);
+    font-weight: 700;
+  }
+  .check.warn { background: var(--alert-soft); color: var(--alert); }
+
+  /* ================= PIT GRID ================= */
+  .pit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .pit-item {
+    background: var(--paper);
+    padding: 28px 24px;
+    min-height: 180px;
+  }
+  .pit-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 40px;
+    color: var(--alert);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .pit-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .pit-body {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  /* ================= TEAM / FOOTER ================= */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .team-card {
+    border-top: 2px solid var(--ink);
+    padding-top: 20px;
+  }
+  .team-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .team-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--alert);
+    margin-bottom: 12px;
+  }
+  .team-school {
+    font-size: 15px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  footer {
+    padding: 60px 0 40px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+  .footer-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--alert-soft);
+    line-height: 2;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .masthead .eyebrow { animation: fadeUp 0.6s ease-out both; }
+  .masthead h1 { animation: fadeUp 0.8s ease-out 0.15s both; }
+  .masthead .dek-grid { animation: fadeUp 0.8s ease-out 0.3s both; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .container, .nav-inner { padding: 0 24px; }
+    .nav-inner { padding: 14px 24px; }
+    .nav-links { display: none; }
+    .dek-grid { grid-template-columns: 1fr; gap: 32px; }
+    .section-head { grid-template-columns: 1fr; gap: 16px; }
+    .matrix { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr 1fr; }
+    .demo-wrap { grid-template-columns: 1fr; }
+    .pit-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    section { padding: 60px 0; }
+    .masthead { padding: 50px 0 40px; }
+  }
+  @media (max-width: 500px) {
+    .flow { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand"><span class="brand-mark"></span>Project DJA</div>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#guardrails">Guardrails</a>
+      <a href="#how">How It Works</a>
+      <a href="#demo">Demo</a>
+      <a href="#pit">PIT</a>
+      <a href="#team">Team</a>
+    </div>
+  </div>
+</nav>
+
+<header class="masthead">
+  <div class="container">
+    <div class="eyebrow"><span>CUNY AI Innovation Challenge · Software Track · 2026</span></div>
+    <h1 class="headline">
+      Academic advising <em>that protects</em> the students <span class="accent">CUNY forgets.</span>
+    </h1>
+    <div class="dek-grid">
+      <p class="dek">
+        <strong>Project DJA</strong> is a compliance-aware AI advisor built for CUNY's 225,000 students — a population that is majority first-generation, working, and non-traditional. It reads a student's degree, career goal, visa status, financial aid, and work schedule, then produces a semester plan that protects each one <em>before</em> suggesting a single course.
+      </p>
+      <div class="byline">
+        <b>By</b> Dawan Sawyer · JLynn Turner · Akkeem Tyrell<br>
+        <b>Track</b> AI Software · <b>Theme</b> Accessible &amp; Inclusive Education<br>
+        <b>Schools</b> BMCC · Medgar Evers College
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="stakes">
+  <div class="container">
+    <div class="stakes-label">▲ Why the stakes are different at CUNY</div>
+    <p class="stakes-copy">
+      For a typical student, an advisor's mistake is an <em>inconvenience.</em> For a CUNY student, it can be a <b>crisis.</b> An international student who drops below 12 credits risks deportation. A TAP recipient who takes the wrong elective loses their funding. We don't just suggest classes — we provide <b>compliance-aware guidance.</b>
+    </p>
+  </div>
+</div>
+
+<section id="problem">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 01 / THE PROBLEM</div>
+      <h2 class="section-title">Human advisors optimize for <em>retention.</em> DegreeWorks enforces the degree. Neither protects the student.</h2>
+    </div>
+    <div class="dek-grid">
+      <p class="dek">
+        Most CUNY students get roughly thirty minutes with an overworked advisor once a semester. That advisor is trained to keep students enrolled — not to weigh their career goals against their visa rules, their TAP eligibility, their Pell proration, and their 40-hour week at the same time. DegreeWorks shows what's required for the degree, but it doesn't know the student is on an F-1 visa, works full-time, or is trying to pivot into robotics.
+      </p>
+      <p class="dek">
+        The result is predictable and documented: students who take "one easy elective" that quietly breaks their TAP eligibility. International students who register for a second online class and unknowingly violate their I-20. Working adults who accidentally take a 10 a.m. section that forces them to quit their job. <strong>Every one of these mistakes is preventable with deterministic rules and five minutes of the right questions.</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="guardrails">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 02 / THE COMPLIANCE GUARDRAIL</div>
+      <h2 class="section-title">Four rules that run <em>before</em> the AI speaks.</h2>
+    </div>
+    <div class="matrix">
+      <div class="card critical">
+        <div class="card-icon">F1</div>
+        <div class="card-kicker">Immigration Status</div>
+        <h3 class="card-title">International (F-1 / J-1)</h3>
+        <p class="card-rule">Must maintain <b>12+ credits</b> per term as an undergraduate. Only <b>one</b> online course counts toward the full-time requirement.</p>
+        <div class="card-risk">Risk of failure · Visa revocation</div>
+      </div>
+      <div class="card fiscal">
+        <div class="card-icon">$T</div>
+        <div class="card-kicker">New York State Aid</div>
+        <h3 class="card-title">TAP Recipients</h3>
+        <p class="card-rule">Must maintain <b>12+ credits that specifically satisfy degree requirements</b>. Electives outside the allowable list are disqualified.</p>
+        <div class="card-risk">Risk of failure · Loss of funding</div>
+      </div>
+      <div class="card fiscal2">
+        <div class="card-icon">$P</div>
+        <div class="card-kicker">Federal Aid</div>
+        <h3 class="card-title">Pell Grant</h3>
+        <p class="card-rule">Award is <b>prorated</b> by enrollment: 12 credits = 100%, 9 = 75%, 6 = 50%. Silent reductions become surprise tuition balances.</p>
+        <div class="card-risk">Risk of failure · Unexpected tuition balance</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">W</div>
+        <div class="card-kicker">Life Constraints</div>
+        <h3 class="card-title">Working Adults</h3>
+        <p class="card-rule">Filter for <b>evening, weekend, or asynchronous</b> sections based on the hours the student is unavailable. No time-sinks.</p>
+        <div class="card-risk">Risk of failure · Academic burnout</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 03 / ARCHITECTURE</div>
+      <h2 class="section-title">AI personalizes. <em>Code</em> protects.</h2>
+    </div>
+    <div class="flow">
+      <div class="step">
+        <div class="step-num">i.</div>
+        <div class="step-title">Intake</div>
+        <p class="step-body">Student enters school, major, completed courses, career goal, and a compliance profile — visa, aid, work schedule.</p>
+        <div class="step-tag">UI / React</div>
+      </div>
+      <div class="step deterministic">
+        <div class="step-num">ii.</div>
+        <div class="step-title">Guardrail</div>
+        <p class="step-body">Deterministic Python rules check visa, TAP, Pell, and scheduling constraints against every candidate course. Non-AI. Auditable.</p>
+        <div class="step-tag">Python · Deterministic</div>
+      </div>
+      <div class="step">
+        <div class="step-num">iii.</div>
+        <div class="step-title">Agent</div>
+        <p class="step-body">Claude with tool use cross-references the career goal against eligible, compliant courses and composes ranked recommendations with citations.</p>
+        <div class="step-tag">Claude API · Agentic</div>
+      </div>
+      <div class="step">
+        <div class="step-num">iv.</div>
+        <div class="step-title">Plan &amp; Chat</div>
+        <p class="step-body">Student receives a plan with requirement-cited reasoning, compliance checks, and a follow-up chat scoped to their situation.</p>
+        <div class="step-tag">Claude API · Scoped</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 04 / WHAT THE STUDENT SEES</div>
+      <h2 class="section-title">A plan, with <em>receipts.</em></h2>
+    </div>
+    <div class="demo-wrap">
+      <div class="demo-panel">
+        <div class="demo-panel-title"><span>Student Profile</span><span>DJA-8431</span></div>
+        <div class="profile-row"><b>School</b><span class="val">BMCC</span></div>
+        <div class="profile-row"><b>Major</b><span class="val">Engineering Science</span></div>
+        <div class="profile-row"><b>Year</b><span class="val">Sophomore</span></div>
+        <div class="profile-row"><b>Visa Status</b><span class="val flag">F-1 International</span></div>
+        <div class="profile-row"><b>Financial Aid</b><span class="val">None</span></div>
+        <div class="profile-row"><b>Work</b><span class="val">Part-time (weekends)</span></div>
+        <div class="profile-row"><b>Career Goal</b><span class="val">Robotics engineer</span></div>
+        <div class="profile-row"><b>Completed</b><span class="val">ENG 101, MAT 301, PHY 215</span></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-title"><span>Fall Plan · 13 credits</span><span>3 of 5 shown</span></div>
+        <div class="rec-card">
+          <div class="rec-code">MAT 302 · 4 cr</div>
+          <div class="rec-name">Analytic Geometry &amp; Calculus II</div>
+          <div class="rec-reason">Required for Engineering Science; prerequisite for the Dynamics sequence that robotics employers look for. You completed MAT 301 last term.</div>
+          <div class="rec-checks">
+            <span class="check">✓ Degree Req</span>
+            <span class="check">✓ Visa Compliant</span>
+            <span class="check">✓ In-Person</span>
+          </div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-code">PHY 225 · 4 cr</div>
+          <div class="rec-name">General Physics II</div>
+          <div class="rec-reason">Extends PHY 215 into electromagnetism — foundational for sensors and control systems in robotics.</div>
+          <div class="rec-checks">
+            <span class="check">✓ Degree Req</span>
+            <span class="check">✓ Visa Compliant</span>
+            <span class="check">✓ Weekend Section</span>
+          </div>
+        </div>
+        <div class="rec-card warn">
+          <div class="rec-code">CSC 111 · 3 cr</div>
+          <div class="rec-name">Introduction to Programming</div>
+          <div class="rec-reason">Aligns with robotics goal. Flagged: the 1 p.m. online section would be your second online course, which violates F-1 full-time rules. <b>An in-person section is available Tuesdays.</b></div>
+          <div class="rec-checks">
+            <span class="check">✓ Career Fit</span>
+            <span class="check warn">! F-1 Online Cap</span>
+            <span class="check">✓ Alternative Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pit">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 05 / PUBLIC INTEREST TECHNOLOGY</div>
+      <h2 class="section-title">All <em>nine</em> guidelines, by design.</h2>
+    </div>
+    <div class="pit-grid">
+      <div class="pit-item">
+        <div class="pit-num">i.</div>
+        <div class="pit-title">Systems Thinking</div>
+        <p class="pit-body">We model the full system: degree, visa, aid, schedule, career. A "good" course that breaks any layer isn't good.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">ii.</div>
+        <div class="pit-title">Ethical Decision-Making</div>
+        <p class="pit-body">The AI never claims authority. Every output cites a requirement and directs the student to confirm with their advisor.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">iii.</div>
+        <div class="pit-title">Equity &amp; Inclusion</div>
+        <p class="pit-body">The guardrail exists because advising failures fall hardest on international, low-income, and working students.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">iv.</div>
+        <div class="pit-title">Engage Communities</div>
+        <p class="pit-body">Our team of three CUNY students <em>is</em> the user. Every requirement was written from lived experience.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">v.</div>
+        <div class="pit-title">Interdisciplinarity</div>
+        <p class="pit-body">We combine education policy, immigration law, financial aid rules, and software engineering in one tool.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">vi.</div>
+        <div class="pit-title">Transparency &amp; Accountability</div>
+        <p class="pit-body">Each recommendation shows the requirement it satisfies, the compliance checks it passed, and plain-language reasoning.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">vii.</div>
+        <div class="pit-title">Continuous Learning</div>
+        <p class="pit-body">Catalog and guardrail rules are modular data, not baked-in model weights. Update policy, not the AI.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">viii.</div>
+        <div class="pit-title">PIT Technological Intuition</div>
+        <p class="pit-body">We deliberately chose <em>not</em> to use AI for compliance. Visa and aid rules must be deterministic, not probabilistic.</p>
+      </div>
+      <div class="pit-item">
+        <div class="pit-num">ix.</div>
+        <div class="pit-title">Champion Public Interest</div>
+        <p class="pit-body">CUNY's 225,000 students deserve guidance that protects their legal status, funding, and time — not just their credit count.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-num">§ 06 / THE TEAM</div>
+      <h2 class="section-title">Built by CUNY students, <em>for</em> CUNY students.</h2>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-name">Dawan Sawyer</div>
+        <div class="team-role">Engineering Lead</div>
+        <div class="team-school">Borough of Manhattan Community College</div>
+      </div>
+      <div class="team-card">
+        <div class="team-name">JLynn Turner</div>
+        <div class="team-role">Product &amp; Design</div>
+        <div class="team-school">Borough of Manhattan Community College</div>
+      </div>
+      <div class="team-card">
+        <div class="team-name">Akkeem Tyrell</div>
+        <div class="team-role">Frontend &amp; Research</div>
+        <div class="team-school">Medgar Evers College</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-title">Academic advising <em>that protects</em> the students CUNY forgets.</div>
+      <div class="footer-meta">
+        Project DJA · 2026<br>
+        CUNY AI Innovation Challenge<br>
+        Software Track
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
